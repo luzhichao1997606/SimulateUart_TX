@@ -4,7 +4,7 @@
  * @Author: lzc
  * @Date: 2020-06-20 14:02:11
  * @LastEditors: lzc
- * @LastEditTime: 2020-06-20 15:38:08
+ * @LastEditTime: 2020-06-20 17:59:09
  */ 
 //此过程为NRF51822程序C文件
 //功能：单线模拟PB18作为串口
@@ -71,7 +71,7 @@ void TX_H(uint8_t Pin_Num_TX)
  * @return	none
  * @note	数据低位在前高位在后
  */
-void MUSART1_SendData(uint8_t data)
+void MUSART1_SendByte(uint8_t data)
 {
 	uint8_t i = 0;
 	TX_L(Simulate_Pin_Num);		//!<起始位
@@ -90,16 +90,36 @@ void MUSART1_SendData(uint8_t data)
 	Delay_us_Normol(delayTime);
 }
  
-
-/*!
- * @brief 	重定向c库函数printf到USART
- * @param	
- * @return	none
- * @note	 
- */
-int fputc(int ch, FILE *f)
+void MUSART1_SendData(const uint8_t *pbuf, uint8_t u8Len)	 
 {
-        /*发送一个字节数据USART1 */
-        MUSART1_SendData((uint8_t) ch); 
-        return (ch);
+    uint16_t i;
+    for(i=0;i<u8Len;i++)
+    {
+        MUSART1_SendByte(pbuf[i]);
+    
+    } 
 }
+
+void UART_Debug_Printf(const char* fmt, ...) 
+{
+    char buff[256];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buff, sizeof(buff), fmt, args); 
+		MUSART1_SendData((uint8_t*)buff, strlen(buff));
+    va_end(args);
+}
+
+///*!
+// * @brief 	重定向c库函数printf到USART
+// * @param	
+// * @return	none
+// * @note	 
+// */
+//int fputc(int ch, FILE *f)
+//{
+//    /*发送一个字节数据USART1 */
+//    MUSART1_SendData((uint8_t) ch); 
+//    return (ch);
+//}
+//
